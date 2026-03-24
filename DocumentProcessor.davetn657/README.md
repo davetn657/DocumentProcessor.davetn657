@@ -1,0 +1,5 @@
+## Technologies
+
+- C#
+- Sqlite
+- OpenXML
