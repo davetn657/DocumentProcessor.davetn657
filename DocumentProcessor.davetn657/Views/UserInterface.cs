@@ -1,13 +1,17 @@
-﻿using Spectre.Console;
+﻿using DocumentProcessor.davetn657.Services;
+using Spectre.Console;
 
 namespace DocumentProcessor.davetn657.Views;
 
 public class UserInterface
 {
     private readonly string _filePath;
-    public UserInterface(string filePath)
+    private readonly IFileReaderService _fileReader;
+
+    public UserInterface(string filePath, FileReaderService fileReader)
     {
         _filePath = filePath;
+        _fileReader = fileReader;
     }
 
     public void Start()
@@ -39,6 +43,7 @@ public class UserInterface
         catch(DirectoryNotFoundException ex){
 
             AnsiConsole.WriteLine($"Couldn't find filePath {_filePath}");
+            AnsiConsole.WriteLine("Error: " + ex);
             AnsiConsole.WriteLine("Try entering a new path?");
 
             var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(new string[] { "Yes", "No" }));
@@ -51,6 +56,23 @@ public class UserInterface
 
     public void FileDetails(string fileName)
     {
+        TitleCard(fileName + " Details");
+
+        var file = fileName.Split('.');
+        var fileType = file[1];
+
+        switch (fileType)
+        {
+            case "xlsx":
+                break;
+            case "doc":
+                break;
+            case "pdf":
+                break;
+            case "csv":
+                break;
+        }
+
 
     }
 
