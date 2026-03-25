@@ -6,7 +6,6 @@ namespace DocumentProcessor.davetn657.Services;
 
 public interface IFileReaderService
 {
-    public WorkSheet? ReadXlsxFile(string filePath);
     public List<PhonebookProperties> FormatFile(string filePath, string fileName);
 }
 
@@ -17,7 +16,40 @@ public class FileReaderService : IFileReaderService
 
     }
 
-    public WorkSheet? ReadXlsxFile(string filePath)
+    public List<PhonebookProperties> FormatFile(string filePath, string fileName)
+    {
+        var fullPath = Path.Combine(filePath, fileName);
+        var file = fileName.Split('.');
+        var fileType = file[1];
+
+        var properties = new List<PhonebookProperties>();
+        WorkSheet? workSheet;
+
+        switch (fileType)
+        {
+            case "xlsx":
+                workSheet = ReadXlsxFile(fullPath);
+                break;
+            case "csv":
+                workSheet = ReadCsvFile(fullPath);
+                break;
+            default:
+                workSheet = null;
+                break;
+        }
+
+        if (workSheet == null)
+        {
+            AnsiConsole.WriteLine("File is empty or could not open!");
+            AnsiConsole.Prompt(new TextPrompt<string>("Return?").AllowEmpty());
+            return [];
+        }
+        properties = FormatWorkSheetData(workSheet);
+
+        return properties;
+    }
+
+    private WorkSheet? ReadXlsxFile(string filePath)
     {
         if (!File.Exists(filePath))
         {
@@ -31,36 +63,21 @@ public class FileReaderService : IFileReaderService
         return workSheet;
     }
 
-    public List<PhonebookProperties> FormatFile(string filePath, string fileName)
+    private WorkSheet? ReadCsvFile(string filePath)
     {
-        var file = fileName.Split('.');
-        var fileType = file[1];
-        var properties = new List<PhonebookProperties>();
-
-        switch (fileType)
+        if (!File.Exists(filePath))
         {
-            case "xlsx":
-                var workSheet = ReadXlsxFile($"{filePath}\\{fileName}");
-
-                if (workSheet == null)
-                {
-                    AnsiConsole.WriteLine("File is empty or could not open!");
-                    AnsiConsole.Prompt(new TextPrompt<string>("Return?").AllowEmpty());
-                }
-                properties = FormatXlsxData(workSheet);
-                break;
-            case "csv":
-                break;
-            case "doc":
-                break;
-            case "pdf":
-                break;
+            Console.WriteLine("File doesn't exist");
+            return null;
         }
 
-        return properties;
+        var workBook = WorkBook.LoadCSV(filePath, ExcelFileFormat.XLSX, listDelimiter: ",");
+        var workSheet = workBook.DefaultWorkSheet;
+
+        return workSheet;
     }
 
-    private List<PhonebookProperties> FormatXlsxData(WorkSheet sheetData)
+    private List<PhonebookProperties> FormatWorkSheetData(WorkSheet sheetData)
     {
         var properties = new List<PhonebookProperties>();
         var rowCount = sheetData.RowCount;
@@ -87,6 +104,13 @@ public class FileReaderService : IFileReaderService
                 break;
             }
         }
+
+        return properties;
+    }
+
+    private List<PhonebookProperties> FormatCsvData()
+    {
+        var properties = new List<PhonebookProperties>();
 
         return properties;
     }
