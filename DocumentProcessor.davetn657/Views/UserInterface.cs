@@ -12,6 +12,8 @@ public class UserInterface
 
     public void Start()
     {
+        TitleCard("Main Menu");
+
         try
         {
             var fileNames = Directory.GetFiles(_filePath)
@@ -24,7 +26,7 @@ public class UserInterface
 
             foreach(var file in fileNames)
             {
-                menuOptions.Add(file);   
+                menuOptions.Add(Path.GetFileName(file));   
             }
 
             AnsiConsole.WriteLine("All files in DocFiles directory");
