@@ -39,14 +39,17 @@ public class FileReaderService : IFileReaderService
 
         switch (fileType)
         {
-            case "xlsx" or "csv":
+            case "xlsx":
                 var workSheet = ReadXlsxFile($"{filePath}\\{fileName}");
+
                 if (workSheet == null)
                 {
                     AnsiConsole.WriteLine("File is empty or could not open!");
                     AnsiConsole.Prompt(new TextPrompt<string>("Return?").AllowEmpty());
                 }
-                properties = FormatToSheetData(workSheet);
+                properties = FormatXlsxData(workSheet);
+                break;
+            case "csv":
                 break;
             case "doc":
                 break;
@@ -57,7 +60,7 @@ public class FileReaderService : IFileReaderService
         return properties;
     }
 
-    private List<PhonebookProperties> FormatToSheetData(WorkSheet sheetData)
+    private List<PhonebookProperties> FormatXlsxData(WorkSheet sheetData)
     {
         var properties = new List<PhonebookProperties>();
         var rowCount = sheetData.RowCount;

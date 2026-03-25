@@ -26,9 +26,9 @@ public class UserInterface
                     .Where(s => s.EndsWith(".xlsx") || s.EndsWith(".doc") || s.EndsWith(".pdf") || s.EndsWith(".csv"));
 
                 var menuOptions = new List<string>()
-            {
-                "Exit"
-            };
+                {
+                    "Exit"
+                };
 
                 foreach (var file in fileNames)
                 {
@@ -71,7 +71,7 @@ public class UserInterface
             "Phone Number"
         });
 
-        for(int i = 0; i < 10 || 10 > properties.Count; i++)
+        for(int i = 0; i < 10 && 10 < properties.Count; i++)
         {
             table.AddRow(properties[i].Name, properties[i].PhoneNumber, properties[i].Email);
         }
