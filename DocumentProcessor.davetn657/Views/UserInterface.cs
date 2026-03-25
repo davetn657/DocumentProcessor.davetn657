@@ -1,5 +1,4 @@
 ﻿using DocumentProcessor.davetn657.Services;
-using DocumentProcessor.davetn657.Models;
 using Spectre.Console;
 
 namespace DocumentProcessor.davetn657.Views;
@@ -85,7 +84,9 @@ public class UserInterface
             "Return"
         };
 
-        AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(menuOptions));
+        var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(menuOptions));
+
+        if (selected.Equals("Return")) return;
     }
 
     public void TitleCard(string title)

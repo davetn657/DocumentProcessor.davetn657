@@ -1,4 +1,4 @@
-﻿using DocumentProcessor.davetn657.Models;
+﻿using DocumentProcessor.davetn657.Data.Models;
 using IronXL;
 using Spectre.Console;
 

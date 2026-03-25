@@ -1,4 +1,4 @@
-﻿namespace DocumentProcessor.davetn657.Models;
+﻿namespace DocumentProcessor.davetn657.Data.Models;
 
 public class PhonebookProperties
 {
