@@ -1,4 +1,5 @@
-﻿using DocumentProcessor.davetn657.Services;
+﻿using DocumentProcessor.davetn657.Data;
+using DocumentProcessor.davetn657.Services;
 using Spectre.Console;
 
 namespace DocumentProcessor.davetn657.Views;
@@ -7,11 +8,13 @@ public class UserInterface
 {
     private readonly string _filePath;
     private readonly IFileReaderService _fileReader;
+    private readonly PhonebookContext _dbContext;
 
-    public UserInterface(string filePath, FileReaderService fileReader)
+    public UserInterface(string filePath, FileReaderService fileReader, PhonebookContext dbContext)
     {
         _filePath = filePath;
         _fileReader = fileReader;
+        _dbContext = dbContext;
     }
 
     public void Start()
@@ -87,6 +90,9 @@ public class UserInterface
         var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(menuOptions));
 
         if (selected.Equals("Return")) return;
+
+        _dbContext.Add(properties);
+        _dbContext.SaveChanges();
     }
 
     public void TitleCard(string title)
