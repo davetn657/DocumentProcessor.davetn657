@@ -1,4 +1,5 @@
 ﻿using DocumentProcessor.davetn657.Services;
+using DocumentProcessor.davetn657.Models;
 using Spectre.Console;
 
 namespace DocumentProcessor.davetn657.Views;
@@ -16,41 +17,44 @@ public class UserInterface
 
     public void Start()
     {
-        TitleCard("Main Menu");
-
-        try
+        while (true)
         {
-            var fileNames = Directory.GetFiles(_filePath)
-                .Where(s => s.EndsWith(".xlsx") || s.EndsWith(".doc") || s.EndsWith(".pdf") || s.EndsWith(".csv"));
+            TitleCard("Main Menu");
+            try
+            {
+                var fileNames = Directory.GetFiles(_filePath)
+                    .Where(s => s.EndsWith(".xlsx") || s.EndsWith(".doc") || s.EndsWith(".pdf") || s.EndsWith(".csv"));
 
-            var menuOptions = new List<string>()
+                var menuOptions = new List<string>()
             {
                 "Exit"
             };
 
-            foreach(var file in fileNames)
-            {
-                menuOptions.Add(Path.GetFileName(file));   
+                foreach (var file in fileNames)
+                {
+                    menuOptions.Add(Path.GetFileName(file));
+                }
+
+                AnsiConsole.WriteLine("All files in DocFiles directory");
+                var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(menuOptions));
+
+                if (selected.Equals("Exit")) return;
+
+                FileDetails(selected);
             }
+            catch (DirectoryNotFoundException ex)
+            {
 
-            AnsiConsole.WriteLine("All files in DocFiles directory");
-            var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(menuOptions));
+                AnsiConsole.WriteLine($"Couldn't find filePath {_filePath}");
+                AnsiConsole.WriteLine("Error: " + ex);
+                AnsiConsole.WriteLine("Try entering a new path?");
 
-            if (selected.Equals("Exit")) return;
+                var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(new string[] { "Yes", "No" }));
 
-            FileDetails(selected);
-        }
-        catch(DirectoryNotFoundException ex){
+                if (selected.Equals("No")) return;
 
-            AnsiConsole.WriteLine($"Couldn't find filePath {_filePath}");
-            AnsiConsole.WriteLine("Error: " + ex);
-            AnsiConsole.WriteLine("Try entering a new path?");
-
-            var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(new string[] { "Yes", "No" }));
-
-            if (selected.Equals("No")) return;
-
-            var newFilePath = AnsiConsole.Ask<string>("Enter here:");
+                var newFilePath = AnsiConsole.Ask<string>("Enter here:");
+            }
         }
     }
 
@@ -58,22 +62,30 @@ public class UserInterface
     {
         TitleCard(fileName + " Details");
 
-        var file = fileName.Split('.');
-        var fileType = file[1];
+        var table = new Table();
+        var properties = _fileReader.FormatFile(_filePath, fileName);
 
-        switch (fileType)
+        table.AddColumns(new string[]{
+            "Name",
+            "Email",
+            "Phone Number"
+        });
+
+        for(int i = 0; i < 10 || 10 > properties.Count; i++)
         {
-            case "xlsx":
-                break;
-            case "doc":
-                break;
-            case "pdf":
-                break;
-            case "csv":
-                break;
+            table.AddRow(properties[i].Name, properties[i].PhoneNumber, properties[i].Email);
         }
 
+        AnsiConsole.WriteLine("Top Excel Rows:");
+        AnsiConsole.Write(table);
 
+        var menuOptions = new List<string> 
+        {
+            "Import Data",
+            "Return"
+        };
+
+        AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(menuOptions));
     }
 
     public void TitleCard(string title)
@@ -84,6 +96,7 @@ public class UserInterface
             Color = Color.Blue1
         };
 
+        AnsiConsole.Clear();
         AnsiConsole.Write(titleCard);
     }
 }
