@@ -25,7 +25,7 @@ public class UserInterface
             try
             {
                 var fileNames = Directory.GetFiles(_filePath)
-                    .Where(s => s.EndsWith(".xlsx") || s.EndsWith(".doc") || s.EndsWith(".pdf") || s.EndsWith(".csv"));
+                    .Where(s => s.EndsWith(".xlsx") || s.EndsWith(".csv"));
 
                 var menuOptions = new List<string>()
                 {
@@ -91,7 +91,7 @@ public class UserInterface
 
         if (selected.Equals("Return")) return;
 
-        _dbContext.Add(properties);
+        _dbContext.Contacts.AddRange(properties);
         _dbContext.SaveChanges();
     }
 

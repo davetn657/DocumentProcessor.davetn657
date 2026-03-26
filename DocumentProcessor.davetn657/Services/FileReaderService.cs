@@ -107,11 +107,4 @@ public class FileReaderService : IFileReaderService
 
         return properties;
     }
-
-    private List<PhonebookProperties> FormatCsvData()
-    {
-        var properties = new List<PhonebookProperties>();
-
-        return properties;
-    }
 }

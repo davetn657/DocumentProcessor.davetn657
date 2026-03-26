@@ -1,4 +1,5 @@
 ﻿using DocumentProcessor.davetn657.Views;
+using DocumentProcessor.davetn657.Data;
 using DocumentProcessor.davetn657.Services;
 
 namespace DocumentProcessor.davetn657;
@@ -8,7 +9,17 @@ internal class Program
     static void Main(string[] args)
     {
         var directory = Directory.GetCurrentDirectory();
-        var userInterface = new UserInterface($"{directory}\\DocFiles", new FileReaderService());
+        var fileReader = new FileReaderService();
+        var dbContext = new PhonebookContext();
+
+        if(!dbContext.Contacts.Any())
+        {
+            var properties = fileReader.FormatFile(Directory.GetCurrentDirectory(), "SeedData.xlsx");
+            dbContext.Contacts.AddRange(properties);
+            dbContext.SaveChanges();
+        }
+
+        var userInterface = new UserInterface($"{directory}\\DocFiles", fileReader, dbContext);
         userInterface.Start();
     }
 }
