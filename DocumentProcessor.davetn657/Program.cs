@@ -1,6 +1,8 @@
-﻿using DocumentProcessor.davetn657.Views;
-using DocumentProcessor.davetn657.Data;
+﻿using DocumentProcessor.davetn657.Data;
 using DocumentProcessor.davetn657.Services;
+using DocumentProcessor.davetn657.Views;
+using IronSoftware.Abstractions.Pdf;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DocumentProcessor.davetn657;
 
@@ -8,19 +10,21 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        var directory = Directory.GetCurrentDirectory();
-        var fileReader = new FileReaderService();
-        var dbContext = new PhonebookContext();
-        var exporter = new ExportDataService(dbContext);
+        var services = new ServiceCollection()
+            .AddDbContext<PhonebookContext>()
+            .AddScoped<IFileReaderService, FileReaderService>()
+            .AddScoped<IExtensibleRenderer, ChromePdfRenderer>()
+            .AddScoped<IExportDataService, ExportDataService>()
+            .AddScoped<IDataSeederService, DataSeederService>()
+            .AddScoped<UserInterface>()
+            .BuildServiceProvider();
 
-        if (!dbContext.Contacts.Any())
-        {
-            var properties = fileReader.FormatFile(Directory.GetCurrentDirectory(), "SeedData.xlsx");
-            dbContext.Contacts.AddRange(properties);
-            dbContext.SaveChanges();
-        }
+        using var scope = services.CreateScope();
 
-        var userInterface = new UserInterface($"{directory}\\DocFiles", fileReader, exporter, dbContext);
-        userInterface.Start();
+        var dataSeeder = scope.ServiceProvider.GetRequiredService<DataSeederService>();
+        dataSeeder.SeedIfEmpty();
+
+        var ui = scope.ServiceProvider.GetRequiredService<UserInterface>();
+        ui.Start();
     }
 }

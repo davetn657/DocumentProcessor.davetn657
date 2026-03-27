@@ -3,6 +3,7 @@ using IronXL;
 using IronPdf;
 using Spectre.Console;
 using System.Text;
+using IronSoftware.Abstractions.Pdf;
 
 namespace DocumentProcessor.davetn657.Services;
 
@@ -16,16 +17,18 @@ public interface IExportDataService
 public class ExportDataService : IExportDataService
 {
     private readonly PhonebookContext _dbContext;
-    public ExportDataService(PhonebookContext dbContext)
+    private readonly IExtensibleRenderer _renderer;
+    public ExportDataService(PhonebookContext dbContext, IExtensibleRenderer renderer)
     {
         _dbContext = dbContext;
+        _renderer = renderer;
     }
 
     public void ExportToPdf()
     {
         try
         {
-            var renderer = new ChromePdfRenderer();
+            var _renderer = new ChromePdfRenderer();
 
             var htmlContent = @$"
             <html>
@@ -46,7 +49,7 @@ public class ExportDataService : IExportDataService
             </body>
             </html>";
 
-            var pdf = renderer.RenderHtmlAsPdf(htmlContent);
+            var pdf = _renderer.RenderHtmlAsPdf(htmlContent);
 
             pdf.SaveAs("DocFiles\\Contacts.pdf");
             AnsiConsole.WriteLine("Successfully exported to pdf");

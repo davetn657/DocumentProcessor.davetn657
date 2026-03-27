@@ -12,7 +12,7 @@ public class UserInterface
     private readonly IExportDataService _exporter;
     private readonly PhonebookContext _dbContext;
 
-    public UserInterface(string filePath, FileReaderService fileReader, ExportDataService exporter, PhonebookContext dbContext)
+    public UserInterface(string filePath, IFileReaderService fileReader, IExportDataService exporter, PhonebookContext dbContext)
     {
         _filePath = filePath;
         _fileReader = fileReader;
