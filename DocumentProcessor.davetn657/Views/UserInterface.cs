@@ -8,12 +8,14 @@ public class UserInterface
 {
     private readonly string _filePath;
     private readonly IFileReaderService _fileReader;
+    private readonly IExportDataService _exporter;
     private readonly PhonebookContext _dbContext;
 
-    public UserInterface(string filePath, FileReaderService fileReader, PhonebookContext dbContext)
+    public UserInterface(string filePath, FileReaderService fileReader, ExportDataService exporter, PhonebookContext dbContext)
     {
         _filePath = filePath;
         _fileReader = fileReader;
+        _exporter = exporter;
         _dbContext = dbContext;
     }
 
@@ -29,7 +31,8 @@ public class UserInterface
 
                 var menuOptions = new List<string>()
                 {
-                    "Exit"
+                    "Exit",
+                    "Export"
                 };
 
                 foreach (var file in fileNames)
@@ -42,7 +45,8 @@ public class UserInterface
 
                 if (selected.Equals("Exit")) return;
 
-                FileDetails(selected);
+                if (selected.Equals("Export")) ExportData();
+                else FileDetails(selected);
             }
             catch (DirectoryNotFoundException ex)
             {
@@ -93,6 +97,31 @@ public class UserInterface
 
         _dbContext.Contacts.AddRange(properties);
         _dbContext.SaveChanges();
+
+        AnsiConsole.WriteLine("Successfully imported data!");
+        AnsiConsole.Prompt(new TextPrompt<string>("Return?"));
+    }
+
+    public void ExportData()
+    {
+        TitleCard("Export Current Data");
+
+        var menuOptions = new Dictionary<string, Action?>()
+        {
+            { "Return", null },
+            { ".xlsx", _exporter.ExportToXlsx },
+            { ".csv", _exporter.ExportToCsv }
+        };
+
+        var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(menuOptions.Keys));
+
+        if (selected.Equals("Return")) return;
+
+        if (menuOptions.TryGetValue(selected, out var action))
+        {
+            action();
+            AnsiConsole.WriteLine("Successfully exported file");
+        }
     }
 
     public void TitleCard(string title)
