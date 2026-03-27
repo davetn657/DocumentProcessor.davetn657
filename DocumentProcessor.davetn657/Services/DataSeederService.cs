@@ -1,9 +1,4 @@
 ﻿using DocumentProcessor.davetn657.Data;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.IO.Pipelines;
-using System.Text;
 
 namespace DocumentProcessor.davetn657.Services;
 
@@ -27,7 +22,8 @@ public class DataSeederService : IDataSeederService
 
         if (!_dbContext.Contacts.Any())
         {
-            var contacts = _fileReader.FormatFile(Directory.GetCurrentDirectory(), "SeedData.xlsx");
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "DocFiles");
+            var contacts = _fileReader.FormatFile(path, "SeedData.xlsx");
             _dbContext.Contacts.AddRange(contacts);
             _dbContext.SaveChanges();
         }

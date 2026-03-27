@@ -21,7 +21,7 @@ internal class Program
 
         using var scope = services.CreateScope();
 
-        var dataSeeder = scope.ServiceProvider.GetRequiredService<DataSeederService>();
+        var dataSeeder = scope.ServiceProvider.GetRequiredService<IDataSeederService>();
         dataSeeder.SeedIfEmpty();
 
         var ui = scope.ServiceProvider.GetRequiredService<UserInterface>();

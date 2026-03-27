@@ -1,20 +1,19 @@
 ﻿using DocumentProcessor.davetn657.Data;
 using DocumentProcessor.davetn657.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Spectre.Console;
 
 namespace DocumentProcessor.davetn657.Views;
 
 public class UserInterface
 {
-    private readonly string _filePath;
     private readonly IFileReaderService _fileReader;
     private readonly IExportDataService _exporter;
     private readonly PhonebookContext _dbContext;
 
-    public UserInterface(string filePath, IFileReaderService fileReader, IExportDataService exporter, PhonebookContext dbContext)
+    public UserInterface(IFileReaderService fileReader, IExportDataService exporter, PhonebookContext dbContext)
     {
-        _filePath = filePath;
         _fileReader = fileReader;
         _exporter = exporter;
         _dbContext = dbContext;
@@ -25,9 +24,10 @@ public class UserInterface
         while (true)
         {
             TitleCard("Main Menu");
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "DocFiles");
             try
             {
-                var fileNames = Directory.GetFiles(_filePath)
+                var fileNames = Directory.GetFiles(filePath)
                     .Where(s => s.EndsWith(".xlsx") || s.EndsWith(".csv"));
 
                 var menuOptions = new List<string>()
@@ -57,14 +57,14 @@ public class UserInterface
                         _dbContext.SaveChanges();
                         break;
                     default:
-                        FileDetails(selected);
+                        FileDetails(selected, filePath);
                         break;
                 }
             }
             catch (DirectoryNotFoundException ex)
             {
 
-                AnsiConsole.WriteLine($"Couldn't find filePath {_filePath}");
+                AnsiConsole.WriteLine($"Couldn't find file path");
                 AnsiConsole.WriteLine("Error: " + ex);
                 AnsiConsole.WriteLine("Try entering a new path?");
 
@@ -72,22 +72,22 @@ public class UserInterface
 
                 if (selected.Equals("No")) return;
 
-                var newFilePath = AnsiConsole.Ask<string>("Enter here:");
+                filePath = AnsiConsole.Ask<string>("Enter here:");
             }
         }
     }
 
-    public void FileDetails(string fileName)
+    public void FileDetails(string fileName, string filePath)
     {
         TitleCard(fileName + " Details");
 
         var table = new Table();
-        var contacts = _fileReader.FormatFile(_filePath, fileName);
+        var contacts = _fileReader.FormatFile(filePath, fileName);
 
         table.AddColumns(new string[]{
             "Name",
-            "Email",
-            "Phone Number"
+            "Phone Number",
+            "Email"
         });
 
         foreach(var contact in contacts.Take(10))
@@ -128,8 +128,6 @@ public class UserInterface
         };
 
         var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(menuOptions.Keys));
-
-        if (selected.Equals("Return")) return;
 
         if (menuOptions.TryGetValue(selected, out var action) && action != null)
         {
