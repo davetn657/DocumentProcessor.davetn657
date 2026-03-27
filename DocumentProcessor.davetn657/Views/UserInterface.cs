@@ -69,7 +69,7 @@ public class UserInterface
         TitleCard(fileName + " Details");
 
         var table = new Table();
-        var properties = _fileReader.FormatFile(_filePath, fileName);
+        var contacts = _fileReader.FormatFile(_filePath, fileName);
 
         table.AddColumns(new string[]{
             "Name",
@@ -77,9 +77,9 @@ public class UserInterface
             "Phone Number"
         });
 
-        for(int i = 0; i < 10 && 10 < properties.Count; i++)
+        foreach(var contact in contacts.Take(10))
         {
-            table.AddRow(properties[i].Name, properties[i].PhoneNumber, properties[i].Email);
+            table.AddRow(contact.Name, contact.PhoneNumber, contact.Email);
         }
 
         AnsiConsole.WriteLine("Top Excel Rows:");
@@ -95,7 +95,7 @@ public class UserInterface
 
         if (selected.Equals("Return")) return;
 
-        _dbContext.Contacts.AddRange(properties);
+        _dbContext.Contacts.AddRange(contacts);
         _dbContext.SaveChanges();
 
         AnsiConsole.WriteLine("Successfully imported data!");
@@ -109,6 +109,7 @@ public class UserInterface
         var menuOptions = new Dictionary<string, Action?>()
         {
             { "Return", null },
+            {".pdf", _exporter.ExportToPdf },
             { ".xlsx", _exporter.ExportToXlsx },
             { ".csv", _exporter.ExportToCsv }
         };
@@ -117,11 +118,12 @@ public class UserInterface
 
         if (selected.Equals("Return")) return;
 
-        if (menuOptions.TryGetValue(selected, out var action))
+        if (menuOptions.TryGetValue(selected, out var action) && action != null)
         {
             action();
-            AnsiConsole.WriteLine("Successfully exported file");
         }
+
+        AnsiConsole.Prompt(new TextPrompt<string>("Return").AllowEmpty());
     }
 
     public void TitleCard(string title)

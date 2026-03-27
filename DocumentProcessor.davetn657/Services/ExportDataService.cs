@@ -1,10 +1,14 @@
 ﻿using DocumentProcessor.davetn657.Data;
 using IronXL;
+using IronPdf;
+using Spectre.Console;
+using System.Text;
 
 namespace DocumentProcessor.davetn657.Services;
 
 public interface IExportDataService
 {
+    void ExportToPdf();
     void ExportToXlsx();
     void ExportToCsv();
 }
@@ -17,6 +21,42 @@ public class ExportDataService : IExportDataService
         _dbContext = dbContext;
     }
 
+    public void ExportToPdf()
+    {
+        try
+        {
+            var renderer = new ChromePdfRenderer();
+
+            var htmlContent = @$"
+            <html>
+            <head>
+                <meta charset='utf-8'>
+                <rel='stylesheet' href='styles.css'>
+            </head>
+            <body>
+                <table>
+                    <tr>
+                        <th>Name</th>
+                        <th>Phone Number</th>
+                        <th>Email</th>
+                        <th>Category</th>
+                    </tr>
+                    {HtmlTables()}
+                </table>
+            </body>
+            </html>";
+
+            var pdf = renderer.RenderHtmlAsPdf(htmlContent);
+
+            pdf.SaveAs("DocFiles\\Contacts.pdf");
+            AnsiConsole.WriteLine("Successfully exported to pdf");
+        }
+        catch
+        {
+            AnsiConsole.WriteLine("Failed to fully export to pdf - data may be missing or incomplete!");
+        }
+    }
+
     public void ExportToXlsx()
     {
         ExportWorkBook(wb => wb.SaveAs("DocFiles\\Contacts.xlsx"));
@@ -27,27 +67,55 @@ public class ExportDataService : IExportDataService
         ExportWorkBook(wb => wb.SaveAsCsv("DocFiles\\Contacts.csv"));
     }
 
-    private void ExportWorkBook(Action<WorkBook> save)
+    private string HtmlTables()
     {
-        var contacts = _dbContext.Contacts.ToList();
+        var contacts = _dbContext.Contacts;
+        var htmlTableContent = new StringBuilder();
 
-        var workbook = WorkBook.Create(ExcelFileFormat.XLSX);
-        var worksheet = workbook.CreateWorkSheet("Contacts");
-
-        worksheet["A1"].Value = "Names";
-        worksheet["B1"].Value = "Phone Numbers";
-        worksheet["C1"].Value = "Emails";
-        worksheet["D1"].Value = "Categories";
-
-        for (int i = 0; i < contacts.Count; i++)
+        foreach(var contact in contacts)
         {
-            var row = i + 2;
-            worksheet["A" + row].Value = contacts[i].Name;
-            worksheet["B" + row].Value = contacts[i].PhoneNumber;
-            worksheet["C" + row].Value = contacts[i].Email;
-            worksheet["D" + row].Value = contacts[i].Category;
+            htmlTableContent.Append(@$"
+            <tr>
+                <td>{contact.Name}</td>
+                <td>{contact.PhoneNumber}</td>
+                <td>{contact.Email}</td>
+                <td>{contact.Category}</td>
+            </tr>
+            ");
         }
 
-        save(workbook);
+        return htmlTableContent.ToString();
+    }
+
+    private void ExportWorkBook(Action<WorkBook> save)
+    {
+        try
+        {
+            var contacts = _dbContext.Contacts.ToList();
+
+            var workbook = WorkBook.Create(ExcelFileFormat.XLSX);
+            var worksheet = workbook.CreateWorkSheet("Contacts");
+
+            worksheet["A1"].Value = "Names";
+            worksheet["B1"].Value = "Phone Numbers";
+            worksheet["C1"].Value = "Emails";
+            worksheet["D1"].Value = "Categories";
+
+            for (int i = 0; i < contacts.Count; i++)
+            {
+                var row = i + 2;
+                worksheet["A" + row].Value = contacts[i].Name;
+                worksheet["B" + row].Value = contacts[i].PhoneNumber;
+                worksheet["C" + row].Value = contacts[i].Email;
+                worksheet["D" + row].Value = contacts[i].Category;
+            }
+
+            save(workbook);
+            AnsiConsole.WriteLine("Successfully exported workbook");
+        }
+        catch
+        {
+            AnsiConsole.WriteLine("Failed to fully export workbook - some data may be missing or incomplete!");
+        }
     }
 }
