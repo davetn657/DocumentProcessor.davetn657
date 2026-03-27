@@ -34,7 +34,12 @@ public class ExportDataService : IExportDataService
             <html>
             <head>
                 <meta charset='utf-8'>
-                <rel='stylesheet' href='styles.css'>
+                <style>
+                    table, th, td 
+                    {{
+                        border: 1px solid;
+                    }}
+                </style>
             </head>
             <body>
                 <table>
