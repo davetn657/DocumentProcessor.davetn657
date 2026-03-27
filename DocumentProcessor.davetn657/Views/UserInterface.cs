@@ -1,5 +1,6 @@
 ﻿using DocumentProcessor.davetn657.Data;
 using DocumentProcessor.davetn657.Services;
+using Microsoft.EntityFrameworkCore;
 using Spectre.Console;
 
 namespace DocumentProcessor.davetn657.Views;
@@ -32,7 +33,8 @@ public class UserInterface
                 var menuOptions = new List<string>()
                 {
                     "Exit",
-                    "Export"
+                    "Export",
+                    "Delete all database data"
                 };
 
                 foreach (var file in fileNames)
@@ -43,10 +45,21 @@ public class UserInterface
                 AnsiConsole.WriteLine("All files in DocFiles directory");
                 var selected = AnsiConsole.Prompt(new SelectionPrompt<string>().AddChoices(menuOptions));
 
-                if (selected.Equals("Exit")) return;
-
-                if (selected.Equals("Export")) ExportData();
-                else FileDetails(selected);
+                switch (selected)
+                {
+                    case "Exit":
+                        return;
+                    case "Export":
+                        ExportData();
+                        break;
+                    case "Delete all database data":
+                        _dbContext.Contacts.ExecuteDelete();
+                        _dbContext.SaveChanges();
+                        break;
+                    default:
+                        FileDetails(selected);
+                        break;
+                }
             }
             catch (DirectoryNotFoundException ex)
             {
